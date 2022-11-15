@@ -1,0 +1,130 @@
+const express = require("express");
+const app = express();
+const Room = require("./models/room");
+const httpServer = require("http").Server(app);
+const { Server } = require("socket.io");
+
+const mongoose = require("mongoose");
+
+mongoose.connect("mongodb://localhost:27017/ludo").then(
+  () => {
+    console.log("mongodb connected...");
+  },
+  (err) => console.log(err)
+);
+
+// const io = require
+// const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: "http://127.0.0.1:5500",
+  },
+});
+
+app.set("views", "./views");
+
+app.set("view engine", "ejs");
+
+app.use(express.static("public"));
+app.use(express.urlencoded({ extended: true }));
+
+// const rooms = { }
+
+app.get("/", async (req, res) => {
+  try {
+    const rooms = await Room.find();
+      res.render("index", { rooms: rooms });
+      console.log(rooms);
+  } catch (err) {}
+});
+
+app.get("/:room", async (req, res) => {
+  try {
+      const room = await Room.findById(req.params.room);
+    //   console.log(room);
+    if (room.joinee.length < 4)
+      res
+        .status(200)
+        .render("room", {
+          roomId: room._id,
+          roomName: room.roomName,
+          roomJoinee: room.joinee,
+        });
+    else {
+      console.log("room capacity reached... try joining another room");
+      //  res.status(200).redirect("/");
+    }
+  } catch (err) {
+    // res.status(500).json({ "err": err });
+    return res.redirect("/");
+  }
+  // res.render('room', {roomName: req.params.room})
+});
+
+app.post("/room", async (req, res) => {
+  try {
+    const newroom = new Room({
+      roomName: req.body.roomName,
+    });
+
+    const room = await newroom.save();
+    res.status(200).redirect(room._id);
+    io.emit("room-created", room);
+  } catch (err) {
+    res.status(500).json({ err: err });
+  }
+
+  // if (rooms[req.body.room] != null) {
+  //     return res.redirect('/')
+  // }
+  // rooms[req.body.room] = {users: {}}
+  // res.redirect(req.body.room)
+
+  //send message when new room was created
+});
+// Server
+
+const users = {};
+
+io.on("connection", (socket) => {
+  console.log("server " + socket.id);
+  // socket.emit("chat-message", "hello World");
+  socket.on("new-user", async (roomId, data) => {
+    try {
+      const room = await Room.findById(roomId);
+      socket.join(roomId);
+      room.joinee.push(socket.id);
+      socket.to(roomId).emit("new-user-alert", `${data}`);
+    //   socket.to(roomId).emit("total_user", `${data}`);
+      await room.save();
+    } catch (error) {
+      console.log("connection err " + error);
+    }
+  });
+  socket.on("send-chat-message", (room, name, message) => {
+    // console.log(room, name, message);
+    socket.to(room).emit("chat-message", { message: message, name: name });
+  });
+
+  socket.on("disconnect", async () => {
+    try {
+      const rooms = await Room.find();
+        rooms.forEach((room) => {
+          if (room.joinee.includes(socket.id)) {
+            socket
+              .to(room._id)
+                  .emit("user-disconnect", socket.id);
+              console.log(socket.id + "disconnected" + room);
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  });
+
+//   async function getuser(sid) {
+//     if (sid === socket.id) return sid;
+//   }
+});
+
+httpServer.listen(3000);

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<script defer src="http://localhost:3000/socket.io/socket.io.js"></script>
+<!-- <script src="/socket.io/socket.io.js"></script> -->
+<script defer src="./home.js"></script>
+<script>
+</script>
+
+<body>
+    <div id="room-container">
+        <% rooms.forEach(room=>{ %> 
+            <div><%= room.roomName %> </div>
+            <a href="/<%= room._id %>">Join</a>
+            <% }) %> 
+
+        </div>
+        <form action="/room" method="post">
+            <input type="text" name="roomName" required autofocus >
+            <button type="submit">New room</button>
+        </form>
+</body>
+
+</html>
