@@ -6,12 +6,16 @@ const { Server } = require("socket.io");
 
 const mongoose = require("mongoose");
 
-mongoose.connect("mongodb://localhost:27017/ludo").then(
-  () => {
-    console.log("mongodb connected...");
-  },
-  (err) => console.log(err)
-);
+mongoose
+  .connect(
+    "mongodb+srv://admin:admin123@cluster0.lo755an.mongodb.net/ludo?retryWrites=true&w=majority"
+  )
+  .then(
+    () => {
+      console.log("mongodb connected...");
+    },
+    (err) => console.log(err)
+  );
 
 var roomJoinees = {};
 
