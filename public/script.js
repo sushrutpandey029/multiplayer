@@ -1,6 +1,6 @@
 // import {io} from "socket.io-client"
 
-const socket = io("http://localhost:3000");
+const socket = io("https://frozen-fortress-11007.herokuapp.com/");
 const messageForm = document.getElementById("send-container");
 const messageInp = document.getElementById("message-input");
 const messagesCont = document.getElementById("messages");
