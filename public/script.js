@@ -13,29 +13,29 @@ const messageInp = document.getElementById("message-input");
 const messagesCont = document.getElementById("messages");
 
 var turn = {};
-var turnFlag = false;
+var diceRoll = false;
 
-// TIMER FUNCTION 
+// TIMER FUNCTION -> turnchange event
 
 function timer() {
   setTimeout(() => {
-    if (turnFlag) {
+    if (diceRoll) {
       document.getElementById("message-input").disabled = true;
       socket.emit("BtnStarted", turn.index, roomId);
-      turnFlag = false;
+      diceRoll = false;
     }
   }, 15000);
 }
 
 
-// START BUTTON FUNCTION WHEN PRESSED EXECUTES THE TRUN MANAGEMENT FOR USERS
+// START BUTTON FUNCTION WHEN PRESSED EXECUTES THE TRUN MANAGEMENT FOR USERS -> timer/ message
 
 const startBtn = document
   .getElementById("startBtn")
   .addEventListener("click", () => {
     console.log("btn clicked !!");
     socket.emit("BtnStarted", 0, roomId);
-    turnFlag = true;
+    diceRoll = true;
     // timer();
   });
 document.getElementById("message-input").disabled = true;
@@ -61,7 +61,7 @@ if (messageForm != null) {
     messageInp.value = "";
     document.getElementById("message-input").disabled = true;
     socket.emit("BtnStarted", turn.index, roomId);
-    turnFlag = false;
+    diceRoll = false;
   });
 }
 
@@ -126,7 +126,7 @@ socket.on("turnChanged", (data) => {
   if (socket.id == data.sid) {
     document.getElementById("message-input").disabled = false;
     console.log("turn changed");
-    turnFlag = true;
+    diceRoll = true;
     // turnPeriod();
     timer();
   }
