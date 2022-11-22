@@ -1,3 +1,11 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//                                      SERVER FILE
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+// importing libraries of node js
+
 const express = require("express");
 const app = express();
 const Room = require("./models/room");
@@ -6,18 +14,27 @@ const { Server } = require("socket.io");
 
 const mongoose = require("mongoose");
 
-mongoose
-  .connect(
-    "mongodb+srv://admin:admin123@cluster0.lo755an.mongodb.net/ludo?retryWrites=true&w=majority"
-  )
-  .then(
-    () => {
-      console.log("mongodb connected...");
-    },
-    (err) => console.log(err)
-  );
+
+
+
+//mongodb connection
+
+
+mongoose.connect("mongodb://localhost:27017").then(
+  () => {
+    console.log("mongodb connected...");
+  },
+  (err) => console.log(err)
+);
 
 var roomJoinees = {};
+
+
+
+
+// creating socket io server
+
+
 
 // const io = require
 // const httpServer = createServer(app);
@@ -27,6 +44,10 @@ const io = new Server(httpServer, {
   },
 });
 
+
+// setting up express js
+
+
 app.set("views", "./views");
 
 app.set("view engine", "ejs");
@@ -34,21 +55,10 @@ app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 
-// const rooms = { }
 
 
-// setInterval(async () => {
-//   // console.log("hi");
-//   setTimeout(async() => {
-//     const rooms = await Room.find();
-//     rooms.forEach(async room => {
-//       if (room.joinee.length<1) {
-//         console.log(room);
-//         await Room.deleteOne(room._id);
-//       }
-//     })
-//   }, 500);
-// }, 1000);
+// deleting room after 15sec if nobody is connected to the room
+
 
 setTimeout(() => {
   setInterval(async () => {
@@ -60,10 +70,10 @@ setTimeout(() => {
       }
     })
   }, 10000);
-}, 5000);
+}, 15000);
 
 
-
+// home route for joining and creating room
 
 app.get("/", async (req, res) => {
   try {
@@ -72,6 +82,9 @@ app.get("/", async (req, res) => {
       // console.log(rooms);
   } catch (err) {}
 });
+
+
+// room route for joining any room
 
 app.get("/:room", async (req, res) => {
   try {
@@ -96,6 +109,11 @@ app.get("/:room", async (req, res) => {
   // res.render('room', {roomName: req.params.room})
 });
 
+
+
+// post route for creating new room in DB
+
+
 app.post("/room", async (req, res) => {
   try {
     const newroom = new Room({
@@ -108,22 +126,25 @@ app.post("/room", async (req, res) => {
   } catch (err) {
     res.status(500).json({ err: err });
   }
-
-  // if (rooms[req.body.room] != null) {
-  //     return res.redirect('/')
-  // }
-  // rooms[req.body.room] = {users: {}}
-  // res.redirect(req.body.room)
-
-  //send message when new room was created
 });
 // Server
 
 const users = {};
 
+
+// socket io instance creation
+
+
+
+// socket connection call back function
+
 io.on("connection", (socket) => {
   console.log("server " + socket.id);
   // socket.emit("chat-message", "hello World");
+
+
+  // HANDLING EVENT WHEN NEW USER IS ADDED TO SOCKET ROOM
+
   socket.on("new-user", async (roomId, data) => {
     try {
       const room = await Room.findById(roomId);
@@ -138,16 +159,27 @@ io.on("connection", (socket) => {
       console.log("connection err " + error);
     }
   });
+
+
+  // handeling send chat message event from server side
+
+
   socket.on("send-chat-message", (room, name, message) => {
     // console.log(room, name, message);
     socket.to(room).emit("chat-message", { message: message, name: name });
   });
+
+
+  // WHEN CLIENT ASK FOR CHANGING TURN FROM SERVER SIDE
 
   socket.on("BtnStarted", async (index, roomId) => {
     console.log(index, roomId);
     const roomJoinees = await Room.findById(roomId);
     io.to(roomId).emit("turnChanged", {sid:roomJoinees.joinee[index], roomId: roomId, index: index+1})
   });
+
+
+  // WHEN CLIENT GETS DISCONNECTED TO SOCKET SERVER
 
   socket.on("disconnect", async () => {
     try {

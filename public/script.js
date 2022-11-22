@@ -1,3 +1,10 @@
+////////////////////////////////////////////////////////////////////////////////////////
+
+//                          SCRIPT FILE FOR ROOMS (CLIENT SIDE)
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+
 // import {io} from "socket.io-client"
 
 const socket = io("http://localhost:3000");
@@ -8,15 +15,20 @@ const messagesCont = document.getElementById("messages");
 var turn = {};
 var turnFlag = false;
 
-
+// TIMER FUNCTION 
 
 function timer() {
   setTimeout(() => {
-    document.getElementById("message-input").disabled = true;
-    socket.emit("BtnStarted", turn.index, roomId);
-    turnFlag = false;
+    if (turnFlag) {
+      document.getElementById("message-input").disabled = true;
+      socket.emit("BtnStarted", turn.index, roomId);
+      turnFlag = false;
+    }
   }, 15000);
 }
+
+
+// START BUTTON FUNCTION WHEN PRESSED EXECUTES THE TRUN MANAGEMENT FOR USERS
 
 const startBtn = document
   .getElementById("startBtn")
@@ -28,6 +40,9 @@ const startBtn = document
   });
 document.getElementById("message-input").disabled = true;
 
+
+
+// FUNCTION TO APPEND ANY TEXT TO CIENT ROOM SIDE
 function appendText(data) {
   const newMessage = document.createElement("div");
   newMessage.innerText = data;
@@ -42,11 +57,11 @@ if (messageForm != null) {
     e.preventDefault();
     const message = messageInp.value;
     socket.emit("send-chat-message", roomId, Name, message);
+    // clearTimeout(timer);
     messageInp.value = "";
     document.getElementById("message-input").disabled = true;
     socket.emit("BtnStarted", turn.index, roomId);
-    // turnFlag = false;
-    clearTimeout(timer);
+    turnFlag = false;
   });
 }
 
@@ -87,26 +102,36 @@ const removeUser = (sid) => {
 //   roomContainer.append(roomLink);
 // });
 
+
+
+// WHEN USER CONNECTED TO SOCKET SERVER 
+
 socket.on("connect", () => {
   console.log(socket.id); // x8WIv7-mJelg7on_ALbx
   // roomJoinees[socket.id] = Name;
 });
+
+
+// WHEN NEW USER GETS JOINED TO SERVER
 
 socket.on("userJoined", (data) => {
   roomJoinees = data;
   console.log(data);
 });
 
+
+// WHEN SERVER ASKS TO CHANGE TURN IN CLIENT SIDE
+
 socket.on("turnChanged", (data) => {
   if (socket.id == data.sid) {
     document.getElementById("message-input").disabled = false;
     console.log("turn changed");
+    turnFlag = true;
     // turnPeriod();
     timer();
   }
   turn = data;
   if (data.index > 3)
-    // joinee.length
     turn.index = 0;
   // socket.emit("BtnStarted", 0, roomId);
   console.log(data);
@@ -117,6 +142,9 @@ socket.on("turnChanged", (data) => {
 });
 
 const currentUser = document.getElementById("currentUsers");
+
+// WHEN NEW USER JOINS APPEND USER JOINED MSG
+
 socket.on("new-user-alert", (data) => {
   appendText(data + " joined");
   // console.log(data);
@@ -128,15 +156,26 @@ socket.on("new-user-alert", (data) => {
   //           <button onclick="kickoutUser">kick out</button>
   //   `;
 });
+
+
+
+// APPEND THE RECIEVED CHAT MESSAGE FROM SERVER
+
 socket.on("chat-message", (data) => {
   appendText(data.name + ": " + data.message);
   // console.log(data);
 });
 
+
+// WHEN USER GETS DISCONNECTED APPEND USER DISCONNECTED TEXT
+
 socket.on("user-disconnect", (data) => {
   console.log(data + "disconnected");
   appendText(`${data} disconnected...`);
 });
+
+
+// CREATE ALERT WHEN USER IS KICKED OUT
 
 function kickoutUser(sid) {
   const kickuser = document.getElementById("kickuser");

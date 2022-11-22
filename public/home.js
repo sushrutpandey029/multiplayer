@@ -1,7 +1,11 @@
+// SCRIPT FILE FOR HOME PAGE (CLIENT SIDE)
+
+
+
 const socket = io("http://localhost:3000");
 const roomContainer = document.getElementById("room-container");
 
-
+// MAANGING AND DYNAMICALLY ADDING NEWLY CREATED ROOMS
 
 socket.on("room-created", (room) => {
     
