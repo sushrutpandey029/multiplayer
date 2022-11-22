@@ -3,7 +3,8 @@ const app = express();
 const Room = require("./models/room");
 const httpServer = require("http").Server(app);
 const { Server } = require("socket.io");
-
+const dotenv = require("dotenv")
+dotenv.config();
 const mongoose = require("mongoose");
 
 mongoose
@@ -174,4 +175,4 @@ io.on("connection", (socket) => {
 
 console.log(roomJoinees);
 
-httpServer.listen(3000);
+httpServer.listen(process.env.PORT || 3000);
