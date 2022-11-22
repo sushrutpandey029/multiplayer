@@ -1,4 +1,4 @@
-const socket = io("http://localhost:3000");
+const socket = io("https://frozen-fortress-11007.herokuapp.com/");
 const roomContainer = document.getElementById("room-container");
 
 

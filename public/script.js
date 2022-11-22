@@ -1,6 +1,8 @@
 // import {io} from "socket.io-client"
+// import { dotenv } from "dotenv"
+// dotenv.config();
 
-const socket = io("https://frozen-fortress-11007.herokuapp.com/");
+const socket = io(`https://frozen-fortress-11007.herokuapp.com/`);
 const messageForm = document.getElementById("send-container");
 const messageInp = document.getElementById("message-input");
 const messagesCont = document.getElementById("messages");
