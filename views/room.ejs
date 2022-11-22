@@ -22,10 +22,10 @@
 <body>
     <%= roomName %>
     <form id="send-container">
-        <input type="text" id="message-input">
+        <input type="text" id="message-input" >
         <button type="submit" id="send-button">></button>
     </form>
-    <div id="currentUsers">
+    <!-- <div id="currentUsers">
         <% roomJoinee.forEach(user=>{ %>
             <div id="kickuser">
                 <%= user %>
@@ -33,7 +33,8 @@
             <button onclick="kickoutUser">kick out</button>
             <% }) %>
 
-    </div>
+    </div> -->
+     <button id="startBtn">Start</button>
     <div id="messages"></div>
 </body>
 

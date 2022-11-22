@@ -13,6 +13,8 @@ mongoose.connect("mongodb://localhost:27017/ludo").then(
   (err) => console.log(err)
 );
 
+var roomJoinees = {};
+
 // const io = require
 // const httpServer = createServer(app);
 const io = new Server(httpServer, {
@@ -30,11 +32,40 @@ app.use(express.urlencoded({ extended: true }));
 
 // const rooms = { }
 
+
+// setInterval(async () => {
+//   // console.log("hi");
+//   setTimeout(async() => {
+//     const rooms = await Room.find();
+//     rooms.forEach(async room => {
+//       if (room.joinee.length<1) {
+//         console.log(room);
+//         await Room.deleteOne(room._id);
+//       }
+//     })
+//   }, 500);
+// }, 1000);
+
+setTimeout(() => {
+  setInterval(async () => {
+    const rooms = await Room.find();
+    rooms.forEach(async room => {
+      if (room.joinee.length<1) {
+        // console.log(room);
+        await Room.deleteOne(room._id);
+      }
+    })
+  }, 10000);
+}, 5000);
+
+
+
+
 app.get("/", async (req, res) => {
   try {
     const rooms = await Room.find();
       res.render("index", { rooms: rooms });
-      console.log(rooms);
+      // console.log(rooms);
   } catch (err) {}
 });
 
@@ -94,7 +125,9 @@ io.on("connection", (socket) => {
       const room = await Room.findById(roomId);
       socket.join(roomId);
       room.joinee.push(socket.id);
+      roomJoinees[socket.id] = data;
       socket.to(roomId).emit("new-user-alert", `${data}`);
+      // socket.to(roomId).emit("userJoined", roomJoinees);
     //   socket.to(roomId).emit("total_user", `${data}`);
       await room.save();
     } catch (error) {
@@ -106,17 +139,24 @@ io.on("connection", (socket) => {
     socket.to(room).emit("chat-message", { message: message, name: name });
   });
 
+  socket.on("BtnStarted", async (index, roomId) => {
+    console.log(index, roomId);
+    const roomJoinees = await Room.findById(roomId);
+    io.to(roomId).emit("turnChanged", {sid:roomJoinees.joinee[index], roomId: roomId, index: index+1})
+  });
+
   socket.on("disconnect", async () => {
     try {
       const rooms = await Room.find();
-        rooms.forEach((room) => {
+        rooms.forEach(async (room, index) => {
           if (room.joinee.includes(socket.id)) {
-            socket
-              .to(room._id)
-                  .emit("user-disconnect", socket.id);
-              console.log(socket.id + "disconnected" + room);
-        }
-      });
+              io.to(room._id).emit("user-disconnect", socket.id);
+            room.joinee.splice(index, 1);
+            console.log(socket.id + "disconnected" + room);
+            console.log(socket.room);
+            await room.save();
+          }
+        });
     } catch (err) {
       console.log(err);
     }
@@ -126,5 +166,8 @@ io.on("connection", (socket) => {
 //     if (sid === socket.id) return sid;
 //   }
 });
+
+
+console.log(roomJoinees);
 
 httpServer.listen(3000);
