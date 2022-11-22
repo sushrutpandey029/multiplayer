@@ -8,7 +8,6 @@ const messageInp = document.getElementById("message-input");
 const messagesCont = document.getElementById("messages");
 
 var turn = {};
-var turnFlag = false;
 
 
 
@@ -16,7 +15,7 @@ function timer() {
   setTimeout(() => {
     document.getElementById("message-input").disabled = true;
     socket.emit("BtnStarted", turn.index, roomId);
-    turnFlag = false;
+    // turnFlag = false;
   }, 15000);
 }
 
@@ -25,8 +24,8 @@ const startBtn = document
   .addEventListener("click", () => {
     console.log("btn clicked !!");
     socket.emit("BtnStarted", 0, roomId);
-    turnFlag = true;
-    // timer();
+    // turnFlag = true;
+    timer();
   });
 document.getElementById("message-input").disabled = true;
 
@@ -105,6 +104,7 @@ socket.on("turnChanged", (data) => {
     console.log("turn changed");
     // turnPeriod();
     timer();
+    console.log(new Date());
   }
   turn = data;
   if (data.index > 3)
