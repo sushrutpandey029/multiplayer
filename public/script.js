@@ -8,48 +8,57 @@ const messageInp = document.getElementById("message-input");
 const messagesCont = document.getElementById("messages");
 
 var turn = {};
+var diceRoll = false;
 
 
+// TIMER FUNCTION -> turnchange event
 
 function timer() {
   setTimeout(() => {
-    document.getElementById("message-input").disabled = true;
-    socket.emit("BtnStarted", turn.index, roomId);
-    // turnFlag = false;
+    if (diceRoll) {
+      document.getElementById("message-input").disabled = true;
+      socket.emit("BtnStarted", turn.index, roomId);
+      diceRoll = false;
+    }
   }, 15000);
 }
+
+
+// START BUTTON FUNCTION WHEN PRESSED EXECUTES THE TRUN MANAGEMENT FOR USERS -> timer/ message
 
 const startBtn = document
   .getElementById("startBtn")
   .addEventListener("click", () => {
     console.log("btn clicked !!");
     socket.emit("BtnStarted", 0, roomId);
-    // turnFlag = true;
-    timer();
+    diceRoll = true;
+    // timer();
   });
 document.getElementById("message-input").disabled = true;
 
+// FUNCTION TO APPEND ANY TEXT TO CIENT ROOM SIDE
 function appendText(data) {
   const newMessage = document.createElement("div");
   newMessage.innerText = data;
   messagesCont.appendChild(newMessage);
 }
 
-if (messageForm != null) {
-  var Name = prompt("Enter your name here...");
-  socket.emit("new-user", roomId, Name);
 
-  messageForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const message = messageInp.value;
-    socket.emit("send-chat-message", roomId, Name, message);
-    messageInp.value = "";
-    document.getElementById("message-input").disabled = true;
-    socket.emit("BtnStarted", turn.index, roomId);
-    // turnFlag = false;
-    clearTimeout(timer);
-  });
-}
+	if (messageForm != null) {
+    var Name = prompt("Enter your name here...");
+    socket.emit("new-user", roomId, Name);
+
+    messageForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const message = messageInp.value;
+      socket.emit("send-chat-message", roomId, Name, message);
+      // clearTimeout(timer);
+      messageInp.value = "";
+      document.getElementById("message-input").disabled = true;
+      socket.emit("BtnStarted", turn.index, roomId);
+      diceRoll = false;
+    });
+  }
 
 // console.log(joinee.split(","));
 
@@ -88,27 +97,33 @@ const removeUser = (sid) => {
 //   roomContainer.append(roomLink);
 // });
 
+// WHEN USER CONNECTED TO SOCKET SERVER 
+
 socket.on("connect", () => {
   console.log(socket.id); // x8WIv7-mJelg7on_ALbx
   // roomJoinees[socket.id] = Name;
 });
+
+
+// WHEN NEW USER GETS JOINED TO SERVER
 
 socket.on("userJoined", (data) => {
   roomJoinees = data;
   console.log(data);
 });
 
+// WHEN SERVER ASKS TO CHANGE TURN IN CLIENT SIDE
+
 socket.on("turnChanged", (data) => {
   if (socket.id == data.sid) {
     document.getElementById("message-input").disabled = false;
     console.log("turn changed");
+    diceRoll = true;
     // turnPeriod();
     timer();
-    console.log(new Date());
   }
   turn = data;
   if (data.index > 3)
-    // joinee.length
     turn.index = 0;
   // socket.emit("BtnStarted", 0, roomId);
   console.log(data);
@@ -118,22 +133,30 @@ socket.on("turnChanged", (data) => {
   // }, 5000);
 });
 
-const currentUser = document.getElementById("currentUsers");
-socket.on("new-user-alert", (data) => {
-  appendText(data + " joined");
-  // console.log(data);
-  // const currentUser = document.getElementById("currentUsers");
-  // currentUser.innerHTML += `
-  //   <span id="kickuser"  >
-  //           ${socket.id}
-  //           </span>
-  //           <button onclick="kickoutUser">kick out</button>
-  //   `;
-});
+	const currentUser = document.getElementById("currentUsers");
+
+  // WHEN NEW USER JOINS APPEND USER JOINED MSG
+
+  socket.on("new-user-alert", (data) => {
+    appendText(data + " joined");
+    // console.log(data);
+    // const currentUser = document.getElementById("currentUsers");
+    // currentUser.innerHTML += `
+    //   <span id="kickuser"  >
+    //           ${socket.id}
+    //           </span>
+    //           <button onclick="kickoutUser">kick out</button>
+    //   `;
+  });
+
+// APPEND THE RECIEVED CHAT MESSAGE FROM SERVER
+
 socket.on("chat-message", (data) => {
   appendText(data.name + ": " + data.message);
   // console.log(data);
 });
+
+// WHEN USER GETS DISCONNECTED APPEND USER DISCONNECTED TEXT
 
 socket.on("user-disconnect", (data) => {
   console.log(data + "disconnected");
