@@ -1,8 +1,13 @@
 const express = require("express");
 const app = express();
 const Room = require("./models/room");
-const httpServer = require("http").Server(app);
-const { Server } = require("socket.io");
+// const httpServer = require("http").Server(app);
+// const { Server } = require("socket.io");
+
+
+
+const server = require("http").createServer(app);
+const io = require("socket.io")(server);
 const dotenv = require("dotenv")
 dotenv.config();
 const mongoose = require("mongoose");
@@ -22,11 +27,11 @@ var roomJoinees = {};
 
 // const io = require
 // const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: {
-    origin: "https://frozen-fortress-11007.herokuapp.com/",
-  },
-});
+// const io = new Server(httpServer, {
+//   cors: {
+//     origin: "https://frozen-fortress-11007.herokuapp.com/",
+//   },
+// });
 
 app.set("views", "./views");
 
@@ -173,6 +178,6 @@ io.on("connection", (socket) => {
 });
 
 
-console.log(roomJoinees);
+// console.log(roomJoinees);
 
-httpServer.listen(process.env.PORT || 3000);
+server.listen(process.env.PORT || 3000);
