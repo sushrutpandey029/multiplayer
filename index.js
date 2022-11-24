@@ -11,14 +11,10 @@ const app = express();
 const Room = require("./models/room");
 const httpServer = require("http").Server(app);
 const { Server } = require("socket.io");
-
+const roomRoutes = require("./routes/room")
 const mongoose = require("mongoose");
-
-
-
-
+const bodyParser = require("body-parser")
 //mongodb connection
-
 
 mongoose.connect("mongodb://localhost:27017/ludo").then(
   () => {
@@ -29,12 +25,7 @@ mongoose.connect("mongodb://localhost:27017/ludo").then(
 
 var roomJoinees = {};
 
-
-
-
 // creating socket io server
-
-
 
 // const io = require
 // const httpServer = createServer(app);
@@ -44,9 +35,7 @@ const io = new Server(httpServer, {
   },
 });
 
-
 // setting up express js
-
 
 app.set("views", "./views");
 
@@ -54,50 +43,50 @@ app.set("view engine", "ejs");
 
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
-
-
-
+app.use(bodyParser.urlencoded({ extended: false }));
 // deleting room after 15sec if nobody is connected to the room
 
+
+app.use(bodyParser.json());
 
 setTimeout(() => {
   setInterval(async () => {
     const rooms = await Room.find();
-    rooms.forEach(async room => {
-      if (room.joinee.length<1) {
+    rooms.forEach(async (room) => {
+      if (room.joinee.length < 1) {
         // console.log(room);
         await Room.deleteOne(room._id);
       }
-    })
+    });
   }, 10000);
 }, 15000);
 
+
+
+app.use("/api",roomRoutes )
 
 // home route for joining and creating room
 
 app.get("/", async (req, res) => {
   try {
     const rooms = await Room.find();
-      res.render("index", { rooms: rooms });
-      // console.log(rooms);
+    res.render("index", { rooms: rooms });
+    // console.log(rooms);
   } catch (err) {}
 });
-
 
 // room route for joining any room
 
 app.get("/:room", async (req, res) => {
   try {
-      const room = await Room.findById(req.params.room);
+    const room = await Room.findById(req.params.room);
     //   console.log(room);
     if (room.joinee.length < 4)
-      res
-        .status(200)
-        .render("room", {
-          roomId: room._id,
-          roomName: room.roomName,
-          roomJoinee: room.joinee,
-        });
+      res.status(200).render("room", {
+        roomId: room._id,
+        roomName: room.roomName,
+        roomJoinee: room.joinee,
+      });
     else {
       console.log("room capacity reached... try joining another room");
       //  res.status(200).redirect("/");
@@ -109,10 +98,7 @@ app.get("/:room", async (req, res) => {
   // res.render('room', {roomName: req.params.room})
 });
 
-
-
 // post route for creating new room in DB
-
 
 app.post("/room", async (req, res) => {
   try {
@@ -127,21 +113,24 @@ app.post("/room", async (req, res) => {
     res.status(500).json({ err: err });
   }
 });
+
+
+
+
+//
+
+
 // Server
 
 const users = {};
 
-
 // socket io instance creation
-
-
 
 // socket connection call back function
 
 io.on("connection", (socket) => {
   console.log("server " + socket.id);
   // socket.emit("chat-message", "hello World");
-
 
   // HANDLING EVENT WHEN NEW USER IS ADDED TO SOCKET ROOM
 
@@ -153,57 +142,66 @@ io.on("connection", (socket) => {
       roomJoinees[socket.id] = data;
       socket.to(roomId).emit("new-user-alert", `${data}`);
       // socket.to(roomId).emit("userJoined", roomJoinees);
-    //   socket.to(roomId).emit("total_user", `${data}`);
+      //   socket.to(roomId).emit("total_user", `${data}`);
       await room.save();
     } catch (error) {
       console.log("connection err " + error);
     }
   });
 
+  var userturn = {};
 
   // handeling send chat message event from server side
 
-
-  socket.on("send-chat-message", (room, name, message) => {
-    // console.log(room, name, message);
+  socket.on("send-chat-message", async (room, name, message) => {
+    console.log(room, name, message);
     socket.to(room).emit("chat-message", { message: message, name: name });
   });
-
 
   // WHEN CLIENT ASK FOR CHANGING TURN FROM SERVER SIDE
 
   socket.on("BtnStarted", async (index, roomId) => {
     console.log(index, roomId);
     const roomJoinees = await Room.findById(roomId);
-    io.to(roomId).emit("turnChanged", {sid:roomJoinees.joinee[index], roomId: roomId, index: index+1})
+    userturn.sid = roomJoinees.joinee[index];
+    userturn.index = index;
+    userturn.room = roomId;
+    io.to(roomId).emit("turnChanged", {
+      sid: roomJoinees.joinee[index],
+      roomId: roomId,
+      index: index + 1,
+    });
   });
-
 
   // WHEN CLIENT GETS DISCONNECTED TO SOCKET SERVER
 
   socket.on("disconnect", async () => {
     try {
-      const rooms = await Room.find();
-        rooms.forEach(async (room, index) => {
-          if (room.joinee.includes(socket.id)) {
-              io.to(room._id).emit("user-disconnect", socket.id);
-            room.joinee.splice(index, 1);
-            console.log(socket.id + "disconnected" + room);
-            console.log(socket.room);
-            await room.save();
-          }
-        });
+      const room = await Room.find({ joinee: socket.id });
+      // const roomId = room._id;
+      // console.log(roomId);
+      // io.to(room._id).emit("turnChanged", {
+      //   sid: socket.id
+      // });
+      console.log(room.joinee);
+      // room.joinee.splice(room.joinee.indexOf(socket.id), 1);
+      // room.save();
     } catch (err) {
       console.log(err);
     }
   });
 
-//   async function getuser(sid) {
-//     if (sid === socket.id) return sid;
-//   }
+  //   async function getuser(sid) {
+  //     if (sid === socket.id) return sid;
+  //   }
 });
 
-
 console.log(roomJoinees);
+
+
+
+
+
+
 
 httpServer.listen(3000);

@@ -18,6 +18,10 @@ const RoomSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    turnHistory: {
+      type: Array,
+      default: [],
+    }
   },
   {
     timestamps: true,

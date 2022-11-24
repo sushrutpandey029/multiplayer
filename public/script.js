@@ -62,6 +62,24 @@ if (messageForm != null) {
     document.getElementById("message-input").disabled = true;
     socket.emit("BtnStarted", turn.index, roomId);
     diceRoll = false;
+
+
+    const body = { index: turn.index-1>=0?turn.index-1:3, message: message };
+
+    fetch(`/api/${turn.roomId}/turnhistory`, {
+      method: "POST", // or 'PUT'
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Success:", data);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
   });
 }
 
@@ -129,6 +147,7 @@ socket.on("turnChanged", (data) => {
     diceRoll = true;
     // turnPeriod();
     timer();
+
   }
   turn = data;
   if (data.index > 3)
@@ -170,8 +189,8 @@ socket.on("chat-message", (data) => {
 // WHEN USER GETS DISCONNECTED APPEND USER DISCONNECTED TEXT
 
 socket.on("user-disconnect", (data) => {
-  console.log(data + "disconnected");
-  appendText(`${data} disconnected...`);
+  console.log(data.sid + "disconnected");
+  appendText(`${data.sid} disconnected...`);
 });
 
 
