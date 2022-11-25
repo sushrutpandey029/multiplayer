@@ -129,8 +129,11 @@ const users = {};
 // socket connection call back function
 
 io.on("connection", (socket) => {
-  console.log("server " + socket.id);
-  // socket.emit("chat-message", "hello World");
+  // console.log("server " + socket.id);
+
+
+
+  
 
   // HANDLING EVENT WHEN NEW USER IS ADDED TO SOCKET ROOM
 
@@ -174,29 +177,35 @@ io.on("connection", (socket) => {
   });
 
   // WHEN CLIENT GETS DISCONNECTED TO SOCKET SERVER
-
   socket.on("disconnect", async () => {
     try {
-      const room = await Room.find({ joinee: socket.id });
-      // const roomId = room._id;
-      // console.log(roomId);
-      // io.to(room._id).emit("turnChanged", {
-      //   sid: socket.id
-      // });
-      console.log(room.joinee);
-      // room.joinee.splice(room.joinee.indexOf(socket.id), 1);
-      // room.save();
+      const rooms = await Room.find();
+        rooms.forEach(async (room, index) => {
+          if (room.joinee.includes(socket.id)) {
+            const room_joinees = room.joinee;
+            room_joinees.splice(room_joinees.indexOf(socket.id), 1);
+            console.log(room._id.toString());
+            
+            io.to(room._id.toString()).emit("user-disconnect", socket.id);
+            // console.log(socket.id + "disconnected" + room);
+            await room.save();
+          }
+        });
     } catch (err) {
       console.log(err);
     }
-  });
+  })
 
-  //   async function getuser(sid) {
-  //     if (sid === socket.id) return sid;
-  //   }
+  
 });
 
-console.log(roomJoinees);
+
+function  exitUser() {
+  console.log("hi");
+}
+
+
+
 
 
 

@@ -14,11 +14,11 @@ router.post("/:room/turnhistory", async (req, res) => {
     }
 })
 
-router.get("/getroom/:socket_id", async (req, res) => {
+router.get("/getroom", async (req, res) => {
     try {
-        const socket_id = req.params.socket_id;
+        const socket_id = req.body.socket_id;
         const room = await Room.find({joinee:socket_id})
-        res.status(200).json(room)
+        res.status(200).json(req.room)
     } catch (err) {
         console.log(err);
         res.status(500).json(err)

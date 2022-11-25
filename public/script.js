@@ -130,6 +130,7 @@ socket.on("connect", () => {
 });
 
 
+
 // WHEN NEW USER GETS JOINED TO SERVER
 
 socket.on("userJoined", (data) => {
@@ -189,8 +190,8 @@ socket.on("chat-message", (data) => {
 // WHEN USER GETS DISCONNECTED APPEND USER DISCONNECTED TEXT
 
 socket.on("user-disconnect", (data) => {
-  console.log(data.sid + "disconnected");
-  appendText(`${data.sid} disconnected...`);
+  console.log(data+ "disconnected");
+  appendText(`${data} disconnected...`);
 });
 
 
