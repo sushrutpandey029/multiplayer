@@ -64,7 +64,7 @@ if (messageForm != null) {
     diceRoll = false;
 
 
-    const body = { index: turn.index-1>=0?turn.index-1:3, message: message };
+    const body = { index: turn.index, message: message };
 
     fetch(`/api/${turn.roomId}/turnhistory`, {
       method: "POST", // or 'PUT'
@@ -151,9 +151,9 @@ socket.on("turnChanged", (data) => {
 
   }
   turn = data;
-  if (data.index > 3)
-    turn.index = 0;
-  // socket.emit("BtnStarted", 0, roomId);
+  // if (data.index > 3)
+  //   turn.index = 0;
+  // // socket.emit("BtnStarted", 0, roomId);
   console.log(data);
 
   // setTimeout(() => {

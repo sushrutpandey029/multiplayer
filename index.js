@@ -172,8 +172,9 @@ io.on("connection", (socket) => {
     io.to(roomId).emit("turnChanged", {
       sid: roomJoinees.joinee[index],
       roomId: roomId,
-      index: index + 1,
+      index: index< roomJoinees.joinee.length?index+1: 0,
     });
+    console.log(index < roomJoinees.joinee.length ? index + 1 : 0);
   });
 
   // creating rpc event for the multiplayer system
