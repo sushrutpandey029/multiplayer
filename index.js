@@ -3,7 +3,7 @@ const app = express();
 const Room = require("./models/room");
 // const httpServer = require("http").Server(app);
 // const { Server } = require("socket.io");
-
+const roomRoutes = require("./routes/room");
 
 
 const server = require("http").createServer(app);
@@ -11,6 +11,7 @@ const io = require("socket.io")(server);
 const dotenv = require("dotenv")
 dotenv.config();
 const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
 
 mongoose
   .connect(
@@ -39,6 +40,9 @@ app.set("view engine", "ejs");
 
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use(bodyParser.json());
 
 // const rooms = { }
 
@@ -69,6 +73,10 @@ setTimeout(() => {
 }, 5000);
 
 
+// api routes
+
+
+app.use("/api", roomRoutes);
 
 
 app.get("/", async (req, res) => {
