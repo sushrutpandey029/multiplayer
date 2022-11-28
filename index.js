@@ -163,6 +163,17 @@ io.on("connection", (socket) => {
     io.to(roomId).emit("turnChanged", {sid:roomJoinees.joinee[index], roomId: roomId, index: index+1})
   });
 
+
+  socket.on("rpc", (user_id, function_id, dice_rolled, piece_moved, roomId) => {
+    io.to(roomId).emit("rpc-recived", {
+      user_id: user_id,
+      function_id: function_id,
+      dice_rolled: dice_rolled,
+      piece_moved: piece_moved,
+      room: roomId,
+    });
+  });
+
   socket.on("disconnect", async () => {
     try {
       const rooms = await Room.find();
