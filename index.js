@@ -137,6 +137,7 @@ const users = {};
 
 io.on("connection", (socket) => {
   console.log("server " + socket.id);
+  socket.emit("getSid", socket.id);
   // socket.emit("chat-message", "hello World");
   socket.on("new-user", async (roomId, data) => {
     try {
