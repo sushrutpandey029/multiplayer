@@ -3,7 +3,7 @@ const app = express();
 const Room = require("./models/room");
 // const httpServer = require("http").Server(app);
 // const { Server } = require("socket.io");
-const roomRoutes = require("./routes/room");
+const roomRoutes = require("./routes/room")
 
 
 const server = require("http").createServer(app);
