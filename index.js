@@ -176,6 +176,18 @@ io.on("connection", (socket) => {
     });
   });
 
+  // creating rpc event for the multiplayer system
+
+  socket.on("rpc", (user_id, function_id, dice_rolled, piece_moved, roomId) => {
+    io.to(roomId).emit("rpc-recived", {
+      user_id: user_id,
+      function_id: function_id,
+      dice_rolled: dice_rolled,
+      piece_moved: piece_moved,
+      room: roomId,
+    })
+  })
+
   // WHEN CLIENT GETS DISCONNECTED TO SOCKET SERVER
   socket.on("disconnect", async () => {
     try {
