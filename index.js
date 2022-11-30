@@ -147,11 +147,12 @@ io.on("connection", (socket) => {
       const payload = {
         name: data,
         sid: socket.id,
+        playerList: room.joinee
       }
-      io.in(roomId).emit("new-user-alert", payload);
       // socket.to(roomId).emit("userJoined", roomJoinees);
-    //   socket.to(roomId).emit("total_user", `${data}`);
+      //   socket.to(roomId).emit("total_user", `${data}`);
       await room.save();
+      io.in(roomId).emit("new-user-alert", payload);
     } catch (error) {
       console.log("connection err " + error);
     }
