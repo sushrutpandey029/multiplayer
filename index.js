@@ -123,6 +123,22 @@ app.post("/room", async (req, res) => {
     res.status(500).json({ err: err });
   }
 
+
+  app.post("/api/room", async (req, res) => {
+    try {
+      const newroom = new Room({
+        roomName: req.body.roomName,
+      });
+
+      const room = await newroom.save();
+      res.status(200).json(room);
+      io.emit("room-created", room);
+    } catch (err) {
+      res.status(500).json({ err: err });
+    }
+  });
+
+
   // if (rooms[req.body.room] != null) {
   //     return res.redirect('/')
   // }
