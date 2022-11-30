@@ -34,18 +34,18 @@ router.post("/join", async (req, res) => {
 });
 
 
-router.post("/room", async (req, res) => {
-  try {
-    const newroom = new Room({
-      roomName: req.body.roomName,
-    });
+// router.post("/room", async (req, res) => {
+//   try {
+//     const newroom = new Room({
+//       roomName: req.body.roomName,
+//     });
 
-    const room = await newroom.save();
-    res.status(200).json(room);
-  } catch (err) {
-    res.status(500).json({ err: err });
-  }
-});
+//     const room = await newroom.save();
+//     res.status(200).json(room);
+//   } catch (err) {
+//     res.status(500).json({ err: err });
+//   }
+// });
 
 
 
