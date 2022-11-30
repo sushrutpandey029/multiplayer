@@ -122,31 +122,24 @@ app.post("/room", async (req, res) => {
   } catch (err) {
     res.status(500).json({ err: err });
   }
-
-
-  app.post("/api/room", async (req, res) => {
-    try {
-      const newroom = new Room({
-        roomName: req.body.roomName,
-      });
-
-      const room = await newroom.save();
-      res.status(200).json(room);
-      io.emit("room-created", room);
-    } catch (err) {
-      res.status(500).json({ err: err });
-    }
-  });
-
-
-  // if (rooms[req.body.room] != null) {
-  //     return res.redirect('/')
-  // }
-  // rooms[req.body.room] = {users: {}}
-  // res.redirect(req.body.room)
-
-  //send message when new room was created
 });
+
+
+app.post("/newroom", async (req, res) => {
+  try {
+    const newroom = new Room({
+      roomName: req.body.roomName,
+    });
+
+    const room = await newroom.save();
+    io.emit("room-created", room);
+    res.status(200).json(room);
+  } catch (err) {
+    res.status(500).json({ err: err });
+  }
+});
+
+
 // Server
 
 const users = {};
