@@ -143,7 +143,7 @@ io.on("connection", (socket) => {
       socket.join(roomId);
       room.joinee.push(socket.id);
       roomJoinees[socket.id] = data;
-      socket.to(roomId).emit("new-user-alert", `${data}`);
+      io.in(roomId).emit("new-user-alert", `${data}`);
       // socket.to(roomId).emit("userJoined", roomJoinees);
       //   socket.to(roomId).emit("total_user", `${data}`);
       await room.save();
