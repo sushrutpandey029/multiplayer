@@ -1,5 +1,14 @@
 const router = require("express").Router();
 const Room = require("../models/room");
+router.get("/:room", async (req, res) => {
+  try {
+    const room = await Room.findById(req.params.room);
+    res.status(200).json(room);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
+});
 
 router.get("/getrooms", async (req, res) => {
   try {
@@ -11,15 +20,6 @@ router.get("/getrooms", async (req, res) => {
   }
 });
 
-router.get("/:room", async (req, res) => {
-  try {
-    const room = await Room.findById(req.params.room);
-    res.status(200).json(room);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json(err);
-  }
-});
 
 
 router.post("/room", async (req, res) => {
