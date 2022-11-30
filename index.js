@@ -144,8 +144,11 @@ io.on("connection", (socket) => {
       const room = await Room.findById(roomId);
       socket.join(roomId);
       room.joinee.push(socket.id);
-      roomJoinees[socket.id] = data;
-      socket.to(roomId).emit("new-user-alert", `${data}`);
+      const payload = {
+        name: data,
+        sid: socket.id,
+      }
+      io.in(roomId).emit("new-user-alert", payload);
       // socket.to(roomId).emit("userJoined", roomJoinees);
     //   socket.to(roomId).emit("total_user", `${data}`);
       await room.save();
